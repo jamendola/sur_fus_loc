@@ -1,0 +1,116 @@
+<launch>
+  <!-- Run GStreamer 1.0-->
+  <arg name="GST10" default="true"/>
+  <arg name="width" default="(int)1280" />                        <!-- Image Width -->
+  <arg name="height" default="(int)720" />                       <!-- Image Height -->
+
+  <!-- Arguments for camera north -->
+  <arg name="Camera_North" default="/dev/video0"/>
+  <!-- The GStreamer framerate needs to be an integral fraction -->
+  <arg name="FPS_North" default="72/1"/>
+  <arg name="PUBLISH_FRAME_North" default="true"/>
+  
+
+  <!-- Arguments for camera west -->
+  <arg name="Camera_West" default="/dev/video1"/>
+  <!-- The GStreamer framerate needs to be an integral fraction -->
+  <arg name="FPS_West" default="72/1"/>
+  <arg name="PUBLISH_FRAME_West" default="true"/>
+ 
+
+  <!-- Arguments for camera south -->
+  <arg name="Camera_South" default="/dev/video2"/>
+  <!-- The GStreamer framerate needs to be an integral fraction -->
+  <arg name="FPS_South" default="72/1"/>
+  <arg name="PUBLISH_FRAME_South" default="true"/>
+  
+
+  <!-- Arguments for camera east -->
+  <arg name="Camera_East" default="/dev/video3"/>
+  <!-- The GStreamer framerate needs to be an integral fraction -->
+  <arg name="FPS_East" default="72/1"/>
+  <arg name="PUBLISH_FRAME_East" default="true"/>
+
+<arg name="os1_hostname" default="" doc="hostname or IP in dotted decimal form of the sensor"/>
+  <arg name="os1_udp_dest" default="" doc="hostname or IP where the sensor will send data packets"/>
+  <arg name="os1_lidar_port" default="7502" doc="port to which the sensor should send lidar data"/>
+  <arg name="os1_imu_port" default="7503" doc="port to which the sensor should send imu data"/>
+  <arg name="replay" default="false" doc="do not connect to a sensor; expect /os1_node/{lidar,imu}_packets from replay"/>
+  <arg name="lidar_mode" default="" doc="resolution and rate: either 512x10, 512x20, 1024x10, 1024x20, or 2048x10"/>
+  <arg name="metadata" default="" doc="override default metadata file for replays"/>
+  <arg name="viz" default="false" doc="whether to run a simple visualizer"/>
+  <arg name="image" default="false" doc="publish range/intensity/noise image topic"/>
+  
+
+
+  <node ns="cn" name="gscam_driver_v4l" pkg="gscam" type="gscam" output="screen">
+    <param name="camera_name" value="default"/>
+    <param name="camera_info_url" value="package://gscam/examples/calibrated_parameters_north.ini"/>
+    
+    <param if="$(arg GST10)" name="gscam_config" value="v4l2src device=$(arg Camera_North) ! capsfilter caps=&quot;video/x-raw, width=$(arg width),height=$(arg height)&quot; ! videoconvert"/>
+    <param name="frame_id" value="/v4l_frame"/>
+    <param name="sync_sink" value="true"/>
+  </node>
+
+<node ns="cw" name="gscam_driver_v4l" pkg="gscam" type="gscam" output="screen">
+    <param name="camera_name" value="default"/>
+    <param name="camera_info_url" value="package://gscam/examples/calibrated_parameters_west.ini"/>
+    
+    <param if="$(arg GST10)" name="gscam_config" value="v4l2src device=$(arg Camera_West) ! capsfilter caps=&quot;video/x-raw, width=$(arg width),height=$(arg height)&quot; ! videoconvert"/>
+    <param name="frame_id" value="/v4l_frame"/>
+    <param name="sync_sink" value="true"/>
+  </node>
+
+<node ns="cs" name="gscam_driver_v4l" pkg="gscam" type="gscam" output="screen">
+    <param name="camera_name" value="default"/>
+    <param name="camera_info_url" value="package://gscam/examples/calibrated_parameters_south.ini"/>
+    
+    <param if="$(arg GST10)" name="gscam_config" value="v4l2src device=$(arg Camera_South) ! capsfilter caps=&quot;video/x-raw, width=$(arg width),height=$(arg height)&quot; ! videoconvert"/>
+    <param name="frame_id" value="/v4l_frame"/>
+    <param name="sync_sink" value="true"/>
+  </node>
+
+<node ns="ce" name="gscam_driver_v4l" pkg="gscam" type="gscam" output="screen">
+    <param name="camera_name" value="default"/>
+    <param name="camera_info_url" value="package://gscam/examples/calibrated_parameters_east.ini"/>
+    
+    <param if="$(arg GST10)" name="gscam_config" value="v4l2src device=$(arg Camera_East) ! capsfilter caps=&quot;video/x-raw, width=$(arg width),height=$(arg height)&quot; ! videoconvert"/>
+    <param name="frame_id" value="/v4l_frame"/>
+    <param name="sync_sink" value="true"/>
+  </node>
+
+  <node if="$(arg PUBLISH_FRAME_South)" name="v4l_transform" pkg="tf" type="static_transform_publisher" args="1 2 3 0 -3.141 0 /world /v4l_frame 10"/>
+
+<node pkg="ouster_ros" name="os1_node" type="os1_node" output="screen" required="true">
+    <param name="~/lidar_mode" type="string" value="$(arg lidar_mode)"/>
+    <param name="~/replay" value="$(arg replay)"/>
+    <param name="~/os1_hostname" value="$(arg os1_hostname)"/>
+    <param name="~/os1_udp_dest" value="$(arg os1_udp_dest)"/>
+    <param name="~/os1_lidar_port" value="$(arg os1_lidar_port)"/>
+    <param name="~/os1_imu_port" value="$(arg os1_imu_port)"/>
+    <param name="~/metadata" value="$(arg metadata)"/>
+  </node>
+
+  <node pkg="ouster_ros" type="os1_cloud_node" name="os1_cloud_node" output="screen" required="true">
+    <remap from="~/os1_config" to="/os1_node/os1_config"/>
+    <remap from="~/lidar_packets" to="/os1_node/lidar_packets"/>
+    <remap from="~/imu_packets" to="/os1_node/imu_packets"/>
+  </node>
+
+  <node if="$(arg viz)" pkg="ouster_ros" name="viz_node" type="viz_node" output="screen" required="true">
+    <remap from="~/os1_config" to="/os1_node/os1_config"/>
+    <remap from="~/points" to="/os1_cloud_node/points"/>
+  </node>
+
+  <node if="$(arg image)" pkg="ouster_ros" name="img_node" type="img_node" output="screen" required="true">
+    <remap from="~/os1_config" to="/os1_node/os1_config"/>
+    <remap from="~/points" to="/os1_cloud_node/points"/>
+  </node>
+
+
+   <node pkg="ros_deep_learning" name="detectnet_cw" type="detectnet_cw" output="screen" 		          		required="true">
+	<param name="/detectnet_cw/image_in" value="/cw/camera/image_raw"/>
+	<param name="_model_name" value="ssd-mobilenet-v2"/>
+   </node>
+	
+</launch>

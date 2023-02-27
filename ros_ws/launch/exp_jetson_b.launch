@@ -1,0 +1,6 @@
+<launch>
+   <node pkg="fusion" name="fusion" type="surround_fusion_mot.py" output="screen">
+
+  </node>
+</launch>
+

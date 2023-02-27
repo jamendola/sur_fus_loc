@@ -1,0 +1,91 @@
+<?xml version="1.0" ?>
+<launch>
+    <!-- must be set to true so that published /clock is used in rviz -->
+    <param name="/use_sim_time" value="true" />
+
+	<!-- simulation configuration -->
+    <arg name="rate"        default="0.2"          doc="The playback speed as a factor" />
+	<arg name="looping"     default="True"       doc="Whether to loop back to start at the end" />
+    <arg name="start"       default="33"        doc="Start N seconds into the simulation" />
+    <arg name="end"         default="350"   doc="Stop N seconds into the simulation" />
+    <arg name="sequence"    default="03"         doc="The KITTI-360 dataset sequence to play" />
+    <arg name="directory"   default=""           doc="The path to the KIITI-360 dataset directory The referenced directory should contain folders of the level `data_raw_3d`, `calibrations`, etc"/>
+
+    <param name="/kitti360_player/rate"        value="$(arg rate)" />
+    <param name="/kitti360_player/looping"     value="$(arg looping)" />
+    <param name="/kitti360_player/start"       value="$(arg start)" />
+    <param name="/kitti360_player/end"         value="$(arg end)" />
+    <param name="/kitti360_player/sequence"    value="$(arg sequence)" />
+    <param name="/kitti360_player/directory"   value="$(arg directory)" />
+
+    <!-- what data to show/load/publish or not - if disabled here, will also not be loaded into RAM -->
+    <arg name="pub_velodyne"                        default="True"   doc="velodyne pointcloud" />
+    <arg name="pub_velodyne_labeled"                default="False"   doc="velodyne pointcloud labeled" />
+    <arg name="pub_sick_points"                     default="False"   doc="sick points" />
+    <arg name="pub_perspective_rectified_left"      default="True"   doc="images of left perspective camera" />
+    <arg name="pub_perspective_rectified_right"     default="False"   doc="images of right perspective camera" />
+    <arg name="pub_perspective_unrectified_left"    default="False"   doc="images of left perspective camera (unrectified)" />
+    <arg name="pub_perspective_unrectified_right"   default="False"   doc="images of right perspective camera (unrectified)" />
+    <arg name="pub_fisheye_left"                    default="True"   doc="images of left fisheye camera" />
+    <arg name="pub_fisheye_right"                   default="False"   doc="images of right fisheye camera" />
+    <arg name="pub_bounding_boxes"                  default="True"   doc="bounding boxes" />
+    <arg name="pub_bounding_boxes_rviz_marker"      default="True"   doc="bounding boxes markers for rviz" />
+    <arg name="pub_2d_semantics_left"               default="False"   doc="semantic ID of each pixel (left cam)" />
+    <arg name="pub_2d_semantics_right"              default="False"   doc="semantic ID of each pixel (right cam)" />
+    <arg name="pub_2d_semantics_rgb_left"           default="False"   doc="color-coded semantic label for each pixel (left cam)" />
+    <arg name="pub_2d_semantics_rgb_right"          default="False"   doc="color-coded semantic label for each pixel (right cam)" />
+    <arg name="pub_2d_instance_left"                default="False"   doc="instance label of each pixel (left cam)" />
+    <arg name="pub_2d_instance_right"               default="False"   doc="instance label of each pixel (right cam)" />
+    <arg name="pub_2d_confidence_left"              default="False"   doc="confidence map (left cam)" />
+    <arg name="pub_2d_confidence_right"             default="False"   doc="confidence map (right cam)" />
+    <arg name="pub_3d_semantics_static"             default="False"   doc="static 3d semantics" />
+    <arg name="pub_3d_semantics_dynamic"            default="False"   doc="dynamic 3d semantics" />
+    <arg name="pub_camera_intrinsics"               default="True"   doc="camera intrinsics" />
+
+    <param name="/kitti360_player/pub_velodyne"                       value="$(arg pub_velodyne)" />
+    <param name="/kitti360_player/pub_velodyne_labeled"               value="$(arg pub_velodyne_labeled)" />
+    <param name="/kitti360_player/pub_sick_points"                    value="$(arg pub_sick_points)" />
+    <param name="/kitti360_player/pub_perspective_rectified_left"     value="$(arg pub_perspective_rectified_left)" />
+    <param name="/kitti360_player/pub_perspective_rectified_right"    value="$(arg pub_perspective_rectified_right)" />
+    <param name="/kitti360_player/pub_perspective_unrectified_left"   value="$(arg pub_perspective_unrectified_left)" />
+    <param name="/kitti360_player/pub_perspective_unrectified_right"  value="$(arg pub_perspective_unrectified_right)" />
+    <param name="/kitti360_player/pub_fisheye_left"                   value="$(arg pub_fisheye_left)" />
+    <param name="/kitti360_player/pub_fisheye_right"                  value="$(arg pub_fisheye_right)" />
+    <param name="/kitti360_player/pub_bounding_boxes"                 value="$(arg pub_bounding_boxes)" />
+    <param name="/kitti360_player/pub_bounding_boxes_rviz_marker"     value="$(arg pub_bounding_boxes_rviz_marker)" />
+    <param name="/kitti360_player/pub_2d_semantics_left"              value="$(arg pub_2d_semantics_left)" />
+    <param name="/kitti360_player/pub_2d_semantics_right"             value="$(arg pub_2d_semantics_right)" />
+    <param name="/kitti360_player/pub_2d_semantics_rgb_left"          value="$(arg pub_2d_semantics_rgb_left)" />
+    <param name="/kitti360_player/pub_2d_semantics_rgb_right"         value="$(arg pub_2d_semantics_rgb_right)" />
+    <param name="/kitti360_player/pub_2d_instance_left"               value="$(arg pub_2d_instance_left)" />
+    <param name="/kitti360_player/pub_2d_instance_right"              value="$(arg pub_2d_instance_right)" />
+    <param name="/kitti360_player/pub_2d_confidence_left"             value="$(arg pub_2d_confidence_left)" />
+    <param name="/kitti360_player/pub_2d_confidence_right"            value="$(arg pub_2d_confidence_right)" />
+    <param name="/kitti360_player/pub_3d_semantics_static"            value="$(arg pub_3d_semantics_static)" />
+    <param name="/kitti360_player/pub_3d_semantics_dynamic"           value="$(arg pub_3d_semantics_dynamic)" />
+    <param name="/kitti360_player/pub_camera_intrinsics"              value="$(arg pub_camera_intrinsics)" />
+
+    <!-- the actual simulation node -->
+    <node pkg="kitti360_publisher" name="kitti360_publisher" type="core_c.py" output="screen"/>
+
+    <!-- static transforms -->
+    <!-- format: x-offset y-offset z-offset yaw(z) pitch(y) roll(x) (offset in meters, angles in radians)-->
+    <node pkg="tf2_ros" type="static_transform_publisher" 
+        name="gpsimu_to_velodyne" 
+        args="0.771049336280387 0.29854143649499193 -0.8362802189143268 0.005805702483432155 -0.010400477715954315 3.1385789123483367 kitti360_gpsimu kitti360_velodyne " />
+    <node pkg="tf2_ros" type="static_transform_publisher" 
+        name="gps_imu_to_cam_00" 
+        args="1.5752681039 0.0043914093 -0.65 1.5336079011307413 -0.009062306194569603 1.4722861590356016 kitti360_gpsimu kitti360_cam_00" />
+    <node pkg="tf2_ros" type="static_transform_publisher" 
+        name="gps_imu_to_cam_01" 
+        args="1.59772414 0.59814949 -0.6488433108 1.5513935815559334 -0.012189496048847337 1.465665239810155 kitti360_gpsimu kitti360_cam_01" />
+    <node pkg="tf2_ros" type="static_transform_publisher" 
+        name="gps_imu_to_cam_02" 
+        args="0.7264036936 -0.1499658517 -1.0686400091 -0.030797759202523006 0.003816106215825954 1.5606129768859012 kitti360_gpsimu kitti360_cam_02" />
+    <node pkg="tf2_ros" type="static_transform_publisher" 
+        name="gps_imu_to_cam_03" 
+        args="0.7016842127 0.746365095 -1.0751978255 -3.1163865971589724 -0.0005898708748186543 1.5715637852794497 kitti360_gpsimu kitti360_cam_03" />
+    <node pkg="tf2_ros" type="static_transform_publisher"
+        name="gps_imu_to_sick_points"
+        args="0.37316600787178855 0.3055298485560259 -0.7697157028904089 -0.007457061564034061 0.0021829398882018403 3.125319333492234 kitti360_gpsimu kitti360_sick_points" />
+</launch>

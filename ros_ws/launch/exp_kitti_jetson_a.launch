@@ -1,0 +1,26 @@
+<launch>
+    <remap from="det_00/image_in" to="/kitti360/2d/perspective/left/image_rect"/>
+    <remap from="det_01/image_in" to="/kitti360/2d/perspective/right/image_rect"/>
+    <remap from="det_02/image_in" to="/kitti360/2d/fisheye/left/image_rect"/>
+    <remap from="det_03/image_in" to="/kitti360/2d/fisheye/right/image_rect"/>
+   <node pkg="ros_deep_learning" name="det_00" type="detectnet" output="screen" 		          		required="false">
+	<param name="_model_name" value="ssd-inception-v2"/>
+<!--       <param name="/image_in" value="/kitti360/2d/perspective/rectified_left"/>-->
+   </node>
+   <node pkg="ros_deep_learning" name="det_01" type="detectnet" output="screen" 		          		required="false">
+	<param name="_model_name" value="ssd-inception-v2"/>
+<!--       <param name="/image_in" value="/kitti360/2d/perspective/rectified_left"/>-->
+   </node>
+    <node pkg="ros_deep_learning" name="det_02" type="detectnet" output="screen" 		          		required="false">
+	<param name="_model_name" value="ssd-inception-v2"/>
+<!--       <param name="/image_in" value="/kitti360/2d/perspective/rectified_left"/>-->
+   </node>
+   <node pkg="ros_deep_learning" name="det_03" type="detectnet" output="screen" 		          		required="false">
+	<param name="_model_name" value="ssd-inception-v2"/>
+<!--       <param name="/image_in" value="/kitti360/2d/perspective/rectified_left"/>-->
+   </node>	
+   <node pkg="cloud_preprocess" name="cloud_cluster" type="cluster_cloud.py" output="screen">
+
+  </node>
+</launch>
+
